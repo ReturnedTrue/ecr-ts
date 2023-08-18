@@ -19,12 +19,12 @@ export interface Handle {
 	destroy(this: Handle): void;
 	orphaned(this: Handle): boolean;
 	add(this: Handle, ...components: ComponentTypeArray): void;
-    set<T extends ComponentType>(this: Handle, ctype: T, value: T): Handle;
-    patch<T extends ComponentType>(this: Handle, ctype: T, patcher: (current: T) => T): void;
-    has<T extends ComponentTypeArray>(this: Handle, ...components: T): void;
-    get<T extends ComponentTypeArray>(this: Handle, ...components: T): LuaTuple<T>;
-    try_get<T extends ComponentType>(this: Handle, component: T): T | undefined;
-    remove<T extends ComponentTypeArray>(this: Handle, ...components: T): void;
+	set<T extends ComponentType>(this: Handle, ctype: T, value: T): Handle;
+	patch<T extends ComponentType>(this: Handle, ctype: T, patcher: (current: T) => T): void;
+	has<T extends ComponentTypeArray>(this: Handle, ...components: T): void;
+	get<T extends ComponentTypeArray>(this: Handle, ...components: T): LuaTuple<T>;
+	try_get<T extends ComponentType>(this: Handle, component: T): T | undefined;
+	remove<T extends ComponentTypeArray>(this: Handle, ...components: T): void;
 }
 
 export interface View<T extends ComponentTypeArray> {
@@ -58,49 +58,49 @@ export interface Group<T extends ComponentTypeArray> {
 type Listener<T = undefined> = T extends undefined ? (id: Entity) => void : (id: Entity, value: T) => void;
 
 interface GroupData<T = unknown> {
-    size: number;
+	size: number;
 
 	/**
 	 * flag used to detect iter invalidation
 	 */
-    added: boolean;
+	added: boolean;
 
-    connections: Array<Connection>;
+	connections: Array<Connection>;
 
-    [key: number]: Pool<T>
+	[key: number]: Pool<T>
 }
 
 interface Pool<T> {
 	/**
 	 * amount of entities in pool
 	 */
-    size: number;
+	size: number;
 
 	/**
 	 * sparse array, maps entity key to internal index
 	 */
-    map: Array<number | undefined>;
+	map: Array<number | undefined>;
 
 	/**
 	 * all entity ids
 	 */
-    entities: Array<Entity>;
+	entities: Array<Entity>;
 
 	/**
 	 * all corresponding componentvalues
 	 */
-    values: Array<T>;
+	values: Array<T>;
 
-    added: Array<Listener<T>> | false;
-    changed: Array<Listener<T>> | false;
-    removing: Array<Listener> | false;
-    group: GroupData<T> | false;
+	added: Array<Listener<T>> | false;
+	changed: Array<Listener<T>> | false;
+	removing: Array<Listener> | false;
+	group: GroupData<T> | false;
 
-    set(this: Pool<T>, id: Entity, value: T): void;
-    get(this: Pool<T>, id: Entity): T | undefined;
-    has(this: Pool<T>, id: Entity): boolean;
-    remove(this: Pool<T>, id: Entity): void;
-    reserve(this: Pool<T>, size: number): void;
+	set(this: Pool<T>, id: Entity, value: T): void;
+	get(this: Pool<T>, id: Entity): T | undefined;
+	has(this: Pool<T>, id: Entity): boolean;
+	remove(this: Pool<T>, id: Entity): void;
+	reserve(this: Pool<T>, size: number): void;
 }
 
 type QueueableSignal<T extends unknown[]> = {
@@ -119,35 +119,35 @@ export interface Queue<T extends unknown[]> {
 }
 
 export interface Registry {
-    create(this: Registry, id: Entity): Entity;
+	create(this: Registry, id: Entity): Entity;
 	create(this: Registry): Entity;
-    release(this: Registry, id: Entity): void;
-    destroy(this: Registry, id: Entity): void;
-    contains(this: Registry, id: Entity): boolean;
+	release(this: Registry, id: Entity): void;
+	destroy(this: Registry, id: Entity): void;
+	contains(this: Registry, id: Entity): boolean;
 
-    orphaned(this: Registry, id: Entity): boolean;
-    add<T extends ComponentTypeArray>(this: Registry, id: Entity, ...components: T): void;
-    set<T extends ComponentType>(this: Registry, id: Entity, ctype: T, value: T): void;
-    patch<T extends ComponentType>(this: Registry, id: Entity, ctype: T, patcher: (component: T) => T): void;
-    has<T extends ComponentTypeArray>(this: Registry, id: Entity, ...components: T): boolean;
-    get<T extends ComponentTypeArray>(this: Registry, id: Entity, ...components: T): LuaTuple<T>,
-    try_get<T extends ComponentType>(this: Registry, id: Entity, component: T): T | undefined,
-    remove<T extends ComponentTypeArray>(this: Registry, id: Entity, ...components: T): void,
+	orphaned(this: Registry, id: Entity): boolean;
+	add<T extends ComponentTypeArray>(this: Registry, id: Entity, ...components: T): void;
+	set<T extends ComponentType>(this: Registry, id: Entity, ctype: T, value: T): void;
+	patch<T extends ComponentType>(this: Registry, id: Entity, ctype: T, patcher: (component: T) => T): void;
+	has<T extends ComponentTypeArray>(this: Registry, id: Entity, ...components: T): boolean;
+	get<T extends ComponentTypeArray>(this: Registry, id: Entity, ...components: T): LuaTuple<T>,
+	try_get<T extends ComponentType>(this: Registry, id: Entity, component: T): T | undefined,
+	remove<T extends ComponentTypeArray>(this: Registry, id: Entity, ...components: T): void,
 
-    view<T extends ComponentTypeArray>(this: Registry, ...components: T): View<T>;
-    track<T extends ComponentTypeArray>(this: Registry, ...components: T): Observer<T>;
-    group<T extends ComponentTypeArray>(this: Registry, ...components: T): Group<T>;
+	view<T extends ComponentTypeArray>(this: Registry, ...components: T): View<T>;
+	track<T extends ComponentTypeArray>(this: Registry, ...components: T): Observer<T>;
+	group<T extends ComponentTypeArray>(this: Registry, ...components: T): Group<T>;
 
-    clear<T extends ComponentTypeArray>(this: Registry, ...components: T): void,
-    storage<T extends ComponentType>(this: Registry, ctype: T): Pool<T>
+	clear<T extends ComponentTypeArray>(this: Registry, ...components: T): void,
+	storage<T extends ComponentType>(this: Registry, ctype: T): Pool<T>
 
-    added<T extends ComponentType>(this: Registry, ctype: T): Signal<[Entity, T]>,
-    changed<T extends ComponentType>(this: Registry, ctype: T): Signal<[Entity, T]>,
-    removing<T extends ComponentType>(this: Registry, ctype: T): Signal<[Entity]>,
+	added<T extends ComponentType>(this: Registry, ctype: T): Signal<[Entity, T]>,
+	changed<T extends ComponentType>(this: Registry, ctype: T): Signal<[Entity, T]>,
+	removing<T extends ComponentType>(this: Registry, ctype: T): Signal<[Entity]>,
 
-    handle(this: Registry, id: Entity): Handle;
+	handle(this: Registry, id: Entity): Handle;
 	handle(this: Registry): Handle;
-    context(this: Registry): Handle;
+	context(this: Registry): Handle;
 }
 
 export namespace ecr {
