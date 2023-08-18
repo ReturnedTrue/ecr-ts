@@ -10,6 +10,7 @@ Fork of [ECR](https://github.com/centau/ecr) for Roblox-ts.
 - Views, Observers and Groups cannot be iterated over, must call the `.iter()` method
 - TS has no length operator, instead use `.size()`
 - Components don't need to be casted, instead supply the generic
+- This package is versioned with `<ecr version>-ts.<x>` where x is incremented for any changes to the TS version in particular 
 
 # Code Sample
 
