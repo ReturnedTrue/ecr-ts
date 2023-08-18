@@ -895,7 +895,16 @@ function View.new<T...>(reg: IRegistry, ...: T...): View<T...>
             ASSERT(table.find(self.includes, ctype), "cannot lead with component; component is not a part of the view")
             self.lead = ctype
             return self
-        end
+        end,
+
+		-- TS EXCLUSIVE
+		iter = function(self: _View<T...>): () -> (Entity, T...)
+			return getmetatable(self).__iter(self)
+		end,
+
+		size = function(self: _View<T...>): number
+			return getmetatable(self).__len(self)
+		end,
     }, {
         __iter = function(self: _View<T...>): () -> (Entity, T...)
             local includes = get_ctype_pools(self.registry, self.includes)
@@ -1032,7 +1041,16 @@ function Observer.new<T...>(reg: IRegistry, ...: T...): Observer<T...>
         clear = function(self: _Observer<T...>): _Observer<T...>
             pool_clear(self.pool)
             return self
-        end
+        end,
+
+		-- TS EXCLUSIVE
+		iter = function(self: _Observer<T...>): () -> (Entity, T...)
+			return getmetatable(self).__iter(self)
+		end,
+
+		size = function(self: _Observer<T...>): number
+			return getmetatable(self).__len(self)
+		end,
     }, {
         __iter = function(self: _Observer<T...>): () -> (Entity, T...)
             local pool = self.pool
@@ -1138,7 +1156,16 @@ Group.__index = Group
 function Group.new<T...>(reg: Registry, data: GroupData, ...: T...): Group<T...>
     local self: _Group<T...> = setmetatable({
         data = data,
-        pools = {}
+        pools = {},
+
+		-- TS EXCLUSIVE
+		iter = function(self: _Group<T...>): () -> (Entity, T...)
+			return getmetatable(self).__iter(self)
+		end,	
+
+		size = function(self: _Group<T...>): number
+			return getmetatable(self).__len(self)
+		end,
     }, {
         __iter = function(self: _Group<T...>): () -> (Entity, T...)
             local pools = self.pools
@@ -1771,6 +1798,15 @@ local Queue = {} do
         end
     end
 
+	-- TS EXCLUSIVE
+	function Queue.iter(self: _Queue)
+		return getmetatable(self).__iter(self)
+	end
+
+	function Queue.size(self: _Queue)
+		return getmetatable(self).__len(self)
+	end
+
     function Queue.__len(self: _Queue)
         return self.size
     end
@@ -1860,7 +1896,9 @@ local ecr = {
     end,
 
     queue = queue_create,
-    null = ID_NULL,
+
+	-- TS_EXCLUSIVE
+    null_id = ID_NULL,
 
     extract = function(id: Entity): (number, number)
         return ID_KEY_VER(id)
@@ -1870,4 +1908,7 @@ local ecr = {
 -- test functions
 (ecr :: any).id = ID_CREATE
 
-return table.freeze(ecr)
+-- TS EXCLUSIVE
+return {
+	default = table.freeze(ecr)
+}

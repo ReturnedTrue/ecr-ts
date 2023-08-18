@@ -1,12 +1,12 @@
 {
-  "name": "@rbxts/ecr-ts",
+  "name": "@rbxts/ecr",
   "version": "0.7.0",
   "description": "A sparse-set based ECS library for Luau, now with TS types.",
   "repository": {
 	"type": "git",
 	"url": "https://github.com/ReturnedTrue/ECR-ts"
   },
-  "main": "src/ecr.luau",
+  "main": "src/ecr",
   "keywords": [],
   "license": "MIT",
   "types": "src/ecr.d.ts",
