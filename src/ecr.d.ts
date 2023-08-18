@@ -1,5 +1,5 @@
 export type Entity = number;
-export type ComponentType = unknown;
+type ComponentType = unknown;
 
 type ComponentTypeArray = Array<ComponentType>;
 
