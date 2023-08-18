@@ -1,5 +1,5 @@
 <div align="center">
-	<img src="https://github.com/ReturnedTrue/ECR-ts/blob/master/images/logo.svg" alt="ECR-ts Logo">
+	<img src="https://github.com/ReturnedTrue/ECR-ts/blob/master/images/logo.svg" width="600" alt="ECR-ts Logo">
 </div>
 
 ___
