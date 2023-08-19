@@ -7,7 +7,6 @@ ___
 Fork of [ECR](https://github.com/centau/ecr) for Roblox-ts.
 
 # Differences to Luau version
-- Views, Observers and Groups cannot be iterated over, must call the `.iter()` method
 - TS has no length operator, instead use `.size()`
 - Components don't need to be casted, instead supply the generic
 - This package is versioned with `<ecr version>-ts.<x>` where x is incremented for any changes to the TS version in particular 
@@ -23,7 +22,7 @@ const Velocity = ecr.component<Vector3>();
 
 // define a system
 function update_physics(world: Registry, dt: number) {
-	for (const [id, pos, vel] of world.view(Position, Velocity).iter()) {
+	for (const [id, pos, vel] of world.view(Position, Velocity)) {
 		world.set(id, Position, pos.add(vel.mul(dt)));
 	}
 }
@@ -40,5 +39,4 @@ for (const i of $range(1, 10)) {
 
 // run system
 update_physics(world, 1/60);
-
 ```

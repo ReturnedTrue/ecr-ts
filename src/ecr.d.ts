@@ -27,18 +27,18 @@ export interface Handle {
 	remove<T extends ComponentTypeArray>(this: Handle, ...components: T): void;
 }
 
-export interface View<T extends ComponentTypeArray> {
+type IterableObject<T extends object, U extends unknown[]> = T & IterableFunction<LuaTuple<U>>;
+
+export type View<T extends ComponentTypeArray> = IterableObject<{
 	// TS EXCLUSIVE
-	iter(this: View<T>): IterableFunction<LuaTuple<[Entity, ...T]>>;
 	size(this: View<T>): number;
 
 	exclude<U extends ComponentTypeArray>(this: View<T>, ...components: U): View<T>;
 	use<U extends ComponentType>(this: View<T>, lead: U): View<T>;
-}
+}, [Entity, ...T]>;
 
-export interface Observer<T extends ComponentTypeArray> {
+export type Observer<T extends ComponentTypeArray> = IterableObject<{
 	// TS EXCLUSIVE
-	iter(this: Observer<T>): IterableFunction<LuaTuple<[Entity, ...T]>>;
 	size(this: Observer<T>): number;
 
 	exclude<U extends ComponentTypeArray>(this: Observer<T>, ...components: U): Observer<T>;
@@ -47,13 +47,12 @@ export interface Observer<T extends ComponentTypeArray> {
 
 	persist(this: Observer<T>): Observer<T>;
 	clear(this: Observer<T>): Observer<T>;
-}
+}, [Entity, ...T]>;
 
-export interface Group<T extends ComponentTypeArray> {
+export type Group<T extends ComponentTypeArray> = IterableObject<{
 	// TS EXCLUSIVE
-	iter(this: Group<T>): IterableFunction<LuaTuple<[Entity, ...T]>>;
 	size(this: Group<T>): number;
-}
+}, [Entity, ...T]>;
 
 type Listener<T = undefined> = T extends undefined ? (id: Entity) => void : (id: Entity, value: T) => void;
 
@@ -109,14 +108,13 @@ type QueueableSignal<T extends unknown[]> = {
 	Connect(this: QueueableSignal<T>, ...args: T): void;
 };
 
-export interface Queue<T extends unknown[]> {
+export type Queue<T extends unknown[]> = IterableObject<{
 	// TS EXCLUSIVE
-	iter(this: Queue<T>): IterableFunction<LuaTuple<T>>
 	size(this: Queue<T>): number;
 
 	add(this: Queue<T>, ...args: T): void;
 	clear(this: Queue<T>): void;
-}
+}, T>;
 
 export interface Registry {
 	create(this: Registry, id: Entity): Entity;

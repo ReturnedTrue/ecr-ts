@@ -898,10 +898,6 @@ function View.new<T...>(reg: IRegistry, ...: T...): View<T...>
         end,
 
 		-- TS EXCLUSIVE
-		iter = function(self: _View<T...>): () -> (Entity, T...)
-			return getmetatable(self).__iter(self)
-		end,
-
 		size = function(self: _View<T...>): number
 			return getmetatable(self).__len(self)
 		end,
@@ -1044,10 +1040,6 @@ function Observer.new<T...>(reg: IRegistry, ...: T...): Observer<T...>
         end,
 
 		-- TS EXCLUSIVE
-		iter = function(self: _Observer<T...>): () -> (Entity, T...)
-			return getmetatable(self).__iter(self)
-		end,
-
 		size = function(self: _Observer<T...>): number
 			return getmetatable(self).__len(self)
 		end,
@@ -1159,10 +1151,6 @@ function Group.new<T...>(reg: Registry, data: GroupData, ...: T...): Group<T...>
         pools = {},
 
 		-- TS EXCLUSIVE
-		iter = function(self: _Group<T...>): () -> (Entity, T...)
-			return getmetatable(self).__iter(self)
-		end,	
-
 		size = function(self: _Group<T...>): number
 			return getmetatable(self).__len(self)
 		end,
@@ -1799,10 +1787,6 @@ local Queue = {} do
     end
 
 	-- TS EXCLUSIVE
-	function Queue.iter(self: _Queue)
-		return getmetatable(self).__iter(self)
-	end
-
 	function Queue.size(self: _Queue)
 		return getmetatable(self).__len(self)
 	end
@@ -1897,7 +1881,7 @@ local ecr = {
 
     queue = queue_create,
 
-	-- TS_EXCLUSIVE
+	-- TS EXCLUSIVE
     null_id = ID_NULL,
 
     extract = function(id: Entity): (number, number)
