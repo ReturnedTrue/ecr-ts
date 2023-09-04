@@ -1,7 +1,24 @@
-export type Entity = number;
-type ComponentType = unknown;
+export type Entity = number & {
+	/**
+	 * Do not use. Only for type metadata.
+	 * @hidden
+	 * @deprecated
+	 */
+	readonly _nominal_ecr_entity: unique symbol;
+};
 
-type ComponentTypeArray = Array<ComponentType>;
+export type Component<T = unknown> = number & {
+	/**
+	 * Do not use. Only for type metadata.
+	 * @hidden
+	 * @deprecated
+	 */
+	readonly _nominal_ecr_component_type: T 
+};
+
+type ComponentArray<T extends unknown[] = unknown[]> = {
+	[index in keyof T]: Component<T[index]>;
+};
 
 export interface Connection {
 	disconnect(this: Connection): void;
@@ -18,30 +35,30 @@ export interface Handle {
 
 	destroy(this: Handle): void;
 	orphaned(this: Handle): boolean;
-	add(this: Handle, ...components: ComponentTypeArray): void;
-	set<T extends ComponentType>(this: Handle, ctype: T, value: T): Handle;
-	patch<T extends ComponentType>(this: Handle, ctype: T, patcher: (current: T) => T): void;
-	has<T extends ComponentTypeArray>(this: Handle, ...components: T): void;
-	get<T extends ComponentTypeArray>(this: Handle, ...components: T): LuaTuple<T>;
-	try_get<T extends ComponentType>(this: Handle, component: T): T | undefined;
-	remove<T extends ComponentTypeArray>(this: Handle, ...components: T): void;
+	add(this: Handle, ...components: ComponentArray): void;
+	set<T>(this: Handle, component: Component<T>, value: T): Handle;
+	patch<T>(this: Handle, component: Component<T>, patcher: (current: T) => T): void;
+	has(this: Handle, ...components: ComponentArray): void;
+	get<T extends unknown[]>(this: Handle, ...components: ComponentArray<T>): LuaTuple<T>;
+	try_get<T>(this: Handle, component: Component<T>): T | undefined;
+	remove(this: Handle, ...components: ComponentArray): void;
 }
 
 type IterableObject<T extends object, U extends unknown[]> = T & IterableFunction<LuaTuple<U>>;
 
-export type View<T extends ComponentTypeArray> = IterableObject<{
+export type View<T extends unknown[]> = IterableObject<{
 	// TS EXCLUSIVE
 	size(this: View<T>): number;
 
-	exclude<U extends ComponentTypeArray>(this: View<T>, ...components: U): View<T>;
-	use<U extends ComponentType>(this: View<T>, lead: U): View<T>;
+	exclude(this: View<T>, ...components: ComponentArray): View<T>;
+	use(this: View<T>, lead: Component): View<T>;
 }, [Entity, ...T]>;
 
-export type Observer<T extends ComponentTypeArray> = IterableObject<{
+export type Observer<T extends unknown[]> = IterableObject<{
 	// TS EXCLUSIVE
 	size(this: Observer<T>): number;
 
-	exclude<U extends ComponentTypeArray>(this: Observer<T>, ...components: U): Observer<T>;
+	exclude(this: Observer<T>, ...components: ComponentArray): Observer<T>;
 	disconnect(this: Observer<T>): Observer<T>;
 	reconnect(this: Observer<T>): Observer<T>;
 
@@ -49,7 +66,7 @@ export type Observer<T extends ComponentTypeArray> = IterableObject<{
 	clear(this: Observer<T>): Observer<T>;
 }, [Entity, ...T]>;
 
-export type Group<T extends ComponentTypeArray> = IterableObject<{
+export type Group<T extends unknown[]> = IterableObject<{
 	// TS EXCLUSIVE
 	size(this: Group<T>): number;
 }, [Entity, ...T]>;
@@ -124,24 +141,24 @@ export interface Registry {
 	contains(this: Registry, id: Entity): boolean;
 
 	orphaned(this: Registry, id: Entity): boolean;
-	add<T extends ComponentTypeArray>(this: Registry, id: Entity, ...components: T): void;
-	set<T extends ComponentType>(this: Registry, id: Entity, ctype: T, value: T): void;
-	patch<T extends ComponentType>(this: Registry, id: Entity, ctype: T, patcher: (component: T) => T): void;
-	has<T extends ComponentTypeArray>(this: Registry, id: Entity, ...components: T): boolean;
-	get<T extends ComponentTypeArray>(this: Registry, id: Entity, ...components: T): LuaTuple<T>,
-	try_get<T extends ComponentType>(this: Registry, id: Entity, component: T): T | undefined,
-	remove<T extends ComponentTypeArray>(this: Registry, id: Entity, ...components: T): void,
+	add(this: Registry, id: Entity, ...components: ComponentArray): void;
+	set<T>(this: Registry, id: Entity, component: Component<T>, value: T): void;
+	patch<T>(this: Registry, id: Entity, component: Component<T>, patcher: (oldValue: T) => T): void;
+	has(this: Registry, id: Entity, ...components: ComponentArray): boolean;
+	get<T extends unknown[]>(this: Registry, id: Entity, ...components: ComponentArray<T>): LuaTuple<T>,
+	try_get<T>(this: Registry, id: Entity, component: Component<T>): T | undefined,
+	remove(this: Registry, id: Entity, ...components: ComponentArray): void,
 
-	view<T extends ComponentTypeArray>(this: Registry, ...components: T): View<T>;
-	track<T extends ComponentTypeArray>(this: Registry, ...components: T): Observer<T>;
-	group<T extends ComponentTypeArray>(this: Registry, ...components: T): Group<T>;
+	view<T extends unknown[]>(this: Registry, ...components: ComponentArray<T>): View<T>;
+	track<T extends unknown[]>(this: Registry, ...components: ComponentArray<T>): Observer<T>;
+	group<T extends unknown[]>(this: Registry, ...components: ComponentArray<T>): Group<T>;
 
-	clear<T extends ComponentTypeArray>(this: Registry, ...components: T): void,
-	storage<T extends ComponentType>(this: Registry, ctype: T): Pool<T>
+	clear(this: Registry, ...components: ComponentArray): void,
+	storage<T>(this: Registry, component: Component<T>): Pool<T>
 
-	added<T extends ComponentType>(this: Registry, ctype: T): Signal<[Entity, T]>,
-	changed<T extends ComponentType>(this: Registry, ctype: T): Signal<[Entity, T]>,
-	removing<T extends ComponentType>(this: Registry, ctype: T): Signal<[Entity]>,
+	added<T>(this: Registry, component: Component<T>): Signal<[Entity, T]>,
+	changed<T>(this: Registry, component: Component<T>): Signal<[Entity, T]>,
+	removing(this: Registry, component: Component): Signal<[Entity]>,
 
 	handle(this: Registry, id: Entity): Handle;
 	handle(this: Registry): Handle;
@@ -149,15 +166,15 @@ export interface Registry {
 }
 
 export namespace ecr {
-	export const entity: unknown;
-	export const null_id: number;
+	export const entity: Component;
+	export const null_id: Entity;
 
 	export function registry(): Registry;
-	export function component<T extends ComponentType>(constructor: () => T): T;
-	export function component<T extends ComponentType>(): T;
+	export function component<T>(constructor: () => T): Component<T>;
+	export function component<T>(): Component<T>;
 	export function tag(): undefined
-	export function is_tag(ctype: ComponentType): boolean;
-	export function name<T extends ComponentType>(names: T & []): ReadonlyArray<T>;
+	export function is_tag(component: Component): boolean;
+	export function name<T extends Record<string, Component>>(names: T): Readonly<T>;
 	export function queue<T extends unknown[]>(signal: QueueableSignal<T>): Queue<T>;
 	export function queue<T extends unknown[]>(): Queue<T>;
 	export function extract(entity: Entity): LuaTuple<[number, number]>;
