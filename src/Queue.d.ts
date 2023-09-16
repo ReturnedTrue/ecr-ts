@@ -1,3 +1,10 @@
+export type QueueableSignal<T extends unknown[]> = {
+	connect(this: QueueableSignal<T>, callback: (...args: T) => unknown): void;
+} | {
+	Connect(this: QueueableSignal<T>, callback: (...args: T) => unknown): void;
+};
+
+
 /**
  * A class for queuing values to be processed altogether later.
  * 

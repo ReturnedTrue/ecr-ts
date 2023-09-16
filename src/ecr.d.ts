@@ -2,7 +2,7 @@ import { Handle } from "./Handle";
 import { View } from "./View";
 import { Observer } from "./Observer";
 import { Group } from "./Group";
-import { Queue } from "./Queue";
+import { Queue, QueueableSignal } from "./Queue";
 
 export {
 	Handle,
@@ -133,11 +133,7 @@ interface Pool<T> {
 	reserve(this: Pool<T>, size: number): void;
 }
 
-type QueueableSignal<T extends unknown[]> = {
-	connect(this: QueueableSignal<T>, ...args: T): void;
-} | {
-	Connect(this: QueueableSignal<T>, ...args: T): void;
-};
+
 
 
 export interface Registry {

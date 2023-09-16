@@ -1,6 +1,6 @@
 {
   "name": "@rbxts/ecr",
-  "version": "0.7.0-ts.2",
+  "version": "0.7.0-ts.3",
   "description": "A sparse-set based ECS library for Luau, now with TS types.",
   "repository": {
 	"type": "git",
