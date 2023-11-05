@@ -133,9 +133,6 @@ interface Pool<T> {
 	reserve(this: Pool<T>, size: number): void;
 }
 
-
-
-
 export interface Registry {
 	/**
 	 * Creates a new entity

@@ -1786,11 +1786,6 @@ local Queue = {} do
         end
     end
 
-	-- TS EXCLUSIVE
-	function Queue.size(self: _Queue)
-		return getmetatable(self).__len(self)
-	end
-
     function Queue.__len(self: _Queue)
         return self.size
     end

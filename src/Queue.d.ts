@@ -4,7 +4,6 @@ export type QueueableSignal<T extends unknown[]> = {
 	Connect(this: QueueableSignal<T>, callback: (...args: T) => unknown): void;
 };
 
-
 /**
  * A class for queuing values to be processed altogether later.
  * 
@@ -25,11 +24,10 @@ export type QueueableSignal<T extends unknown[]> = {
  * Clearing during iteration can result in an error.
  */
 export type Queue<T extends unknown[]> = IterableFunction<LuaTuple<T>> & {
-	// TS EXCLUSIVE
 	/**
 	 * The amount of values in the queue
 	 */
-	size(this: Queue<T>): number;
+	size: number;
 
 	/**
 	 * Adds a set of values to a queue.

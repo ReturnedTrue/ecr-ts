@@ -17,5 +17,8 @@ import { Entity } from "./ecr";
  */
 export type Group<T extends unknown[]> = IterableFunction<LuaTuple<[Entity, ...T]>> & {
 	// TS EXCLUSIVE
+	/**
+	 * Returns the amount of entities in the group.
+	 */
 	size(this: Group<T>): number;
 };

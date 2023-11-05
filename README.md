@@ -7,7 +7,7 @@ ___
 Fork of [ECR](https://github.com/centau/ecr) for Roblox-ts.
 
 # Differences to Luau version
-- TS has no length operator, instead use `.size()`
+- TS has no length operator, instead use `.size()`. Queues and Pools have it as a property, `.size`
 - Components don't need to be casted, instead supply the generic
 - This package is versioned with `<ecr version>-ts.<x>` where x is incremented for any changes to the TS version in particular 
 
