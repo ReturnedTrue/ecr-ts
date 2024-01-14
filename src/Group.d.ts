@@ -1,7 +1,7 @@
 import { Entity } from "./ecr";
 
 /**
- * Groups are used to efficiently iterate over a set of components.
+ * Fast iterator for viewing entities and components in a registry.
  * 
  * **Iteration**
  * 

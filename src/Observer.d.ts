@@ -1,9 +1,7 @@
 import { Entity, ComponentArray } from "./ecr";
 
 /**
- * Observers are used to track component changes.
- * 
- * The observer records changed components that can be iterated over and cleared at will.
+ * Tracks component changes, and can be cleared at will.
  * 
  * **Iteration**
  * 

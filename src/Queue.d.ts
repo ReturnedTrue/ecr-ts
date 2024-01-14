@@ -5,7 +5,7 @@ export type QueueableSignal<T extends unknown[]> = {
 };
 
 /**
- * A class for queuing values to be processed altogether later.
+ * Queues values to be processed later.
  * 
  * **Iteration**
  * 

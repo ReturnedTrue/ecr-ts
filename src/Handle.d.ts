@@ -1,4 +1,4 @@
-import { Entity, ComponentArray, Component } from "./ecr";
+import { Entity, ComponentArray, Component, Registry } from "./ecr";
 
 /**
  * Thin wrapper around an entity and its registry.
@@ -7,7 +7,7 @@ export interface Handle {
 	/**
 	 * The registry the entity belongs to.
 	 */
-	registry: number;
+	registry: Registry;
 
 	/**
 	 * The entity the handle refers to.
@@ -22,7 +22,7 @@ export interface Handle {
 	/**
 	 * Checks if the handle's entity has no components.
 	 */
-	orphaned(this: Handle): boolean;
+	has_none(this: Handle): boolean;
 
 	/**
 	 * Adds all components specified to the handle's entity

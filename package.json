@@ -1,7 +1,8 @@
 {
   "name": "@rbxts/ecr",
-  "version": "0.7.0-ts.4",
+  "version": "0.8.0-ts.0",
   "description": "A sparse-set based ECS library for Luau, now with TS types.",
+  "homepage": "https://centau.github.io/ecr/",
   "repository": {
 	"type": "git",
 	"url": "https://github.com/ReturnedTrue/ECR-ts"
@@ -19,8 +20,8 @@
     "access": "public"
   },
   "devDependencies": {
-    "@rbxts/compiler-types": "^1.3.3-types.1",
-    "@rbxts/types": "^1.0.710",
-    "typescript": "^5.1.6"
+    "@rbxts/compiler-types": "^2.2.0-types.0",
+    "@rbxts/types": "^1.0.738",
+    "typescript": "^5.3.3"
   }
 }

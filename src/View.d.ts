@@ -1,7 +1,7 @@
 import { Entity, ComponentArray, Component } from "./ecr";
 
 /**
- * Views are used to look at multiple entity's component values.
+ * Iterator for viewing entities and components in a registry.
  * 
  * **Iteration**
  * 

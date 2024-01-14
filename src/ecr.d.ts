@@ -35,7 +35,7 @@ export type ComponentArray<T extends unknown[] = unknown[]> = {
 };
 
 /**
- * ECR Connection class
+ * ecr Connection class
  */
 export interface Connection {
 	/**
@@ -59,7 +59,7 @@ export interface Connection {
 }
 
 /**
- * ECR Signal class.
+ * ecr Signal class.
  */
 export interface Signal<T extends unknown[]> {
 	/**
@@ -88,51 +88,52 @@ interface GroupData<T = unknown> {
 }
 
 /**
- * The core data structure used by the registry internally to store entities and component values for each component type.
+ * The container used by the registry internally to store entities and component values for each component type.
  */
 interface Pool<T> {
 	/**
 	 * The amount of entities contained in the pool.
 	 */
 	size: number;
+	capacity: number;
+
+	map: buffer;
+	map_max: number;
 
 	/**
-	 * Sparse array, maps entity key to internal index.
-	 */
-	map: Array<number | undefined>;
-
-	/**
-	 * An array of all entities with the given component type.
+	 * A buffer of all entities with the given component type.
 	 * 
 	 * @remarks
 	 * 
-	 * Sorted in the same order as Pool.values.
+	 * 0-indexed.
 	 * 
-	 * `entities[n]`'s component value is located at `values[n]`
-	 */
-	entities: Array<Entity>;
+	 * Sorted in the same order as `Pool.values`.
+	 * 
+	 * i.e. entities[n]'s component value is located at values[n + 1].
+	*/
+	entities: buffer;
 
 	/**
 	 * An array of all values for the given component type.
 	 * 
 	 * @remarks
+	 * 1-indexed.
 	 * 
-	 * Sorted in the same order as Pool.entities.
+	 * Sorted in the same order as `Pool.entities`.
 	 */
 	values: Array<T>;
 
-	added: Array<Listener<T>> | false;
-	changed: Array<Listener<T>> | false;
-	removing: Array<Listener> | false;
+	on_add: Array<Listener<T>> | false;
+	on_change: Array<Listener<T>> | false;
+	on_remove: Array<Listener> | false;
 	group: GroupData<T> | false;
 
-	set(this: Pool<T>, id: Entity, value: T): void;
-	get(this: Pool<T>, id: Entity): T | undefined;
-	has(this: Pool<T>, id: Entity): boolean;
-	remove(this: Pool<T>, id: Entity): void;
 	reserve(this: Pool<T>, size: number): void;
 }
 
+/**
+ * Container for entities and components.
+ */
 export interface Registry {
 	/**
 	 * Creates a new entity
@@ -195,12 +196,8 @@ export interface Registry {
 
 	/**
 	 * Checks if the given entity has no components.
-	 * 
-	 * @remarks
-	 * 
-	 * An entity is considered an orphan if it has no components.
 	 */
-	orphaned(this: Registry, id: Entity): boolean;
+	has_none(this: Registry, id: Entity): boolean;
 
 	/**
 	 * Adds all components specified to an entity.
@@ -344,6 +341,11 @@ export interface Registry {
 	storage<T>(this: Registry, component: Component<T>): Pool<T>;
 
 	/**
+	 * Returns an iterator to get all component types and their corresponding [pool](https://centau.github.io/ecr/api/Pool.html) in the registry.
+	 */
+	storage(this: Registry): IterableFunction<LuaTuple<[Component, Pool<unknown>]>>;
+
+	/**
 	 * Returns a [signal](https://centau.github.io/ecr/api/Signal.html) which is fired whenever the given component is added to an entity.
 	 * 
 	 * @remarks
@@ -354,7 +356,7 @@ export interface Registry {
 	 * 
 	 * Components cannot be added or removed within a listener.
 	 */
-	added<T>(this: Registry, component: Component<T>): Signal<[Entity, T]>;
+	on_add<T>(this: Registry, component: Component<T>): Signal<[Entity, T]>;
 
 	/**
 	 * Returns a [signal](https://centau.github.io/ecr/api/Signal.html) which is fired whenever the given component's value is changed for an entity.
@@ -367,7 +369,7 @@ export interface Registry {
 	 * 
 	 * Components cannot be added or removed within a listener.
 	 */
-	changed<T>(this: Registry, component: Component<T>): Signal<[Entity, T]>;
+	on_change<T>(this: Registry, component: Component<T>): Signal<[Entity, T]>;
 
 	/**
 	 * Returns a [signal](https://centau.github.io/ecr/api/Signal.html) which is fired whenever the given component is being removed from an entity.
@@ -380,7 +382,7 @@ export interface Registry {
 	 * 
 	 * Components cannot be added or removed within a listener.
 	 */
-	removing(this: Registry, component: Component): Signal<[Entity]>;
+	on_remove(this: Registry, component: Component): Signal<[Entity]>;
 
 	/**
 	 * Returns a [handle](https://centau.github.io/ecr/api/Handle.html) to an entity.
@@ -401,51 +403,84 @@ export interface Registry {
 	handle(this: Registry): Handle;
 
 	/**
-	 * Returns a [handle](https://centau.github.io/ecr/api/Handle.html) to a special context entity.
+	 * Returns a handle to the context entity.
 	 * 
 	 * @remarks
 	 * 
-	 * The context is a special entity that always exists and cannot be destroyed. Components added to it will still be returned by views and fire signals.
-	 * 
-	 * The purpose of the context is to store components that are not specific to entities but instead are concerned with the world itself.
-	 * 
-	 * Examples of when this can be used is to store data such as time, gravity, difficulty, etc.
-	 * 
-	 * The same context entity handle is always returned when called.
+	 * Will automatically create the context entity if it does not already exist.
 	 */
 	context(this: Registry): Handle;
 }
 
+/**
+ * A Luau ECS library.
+ */
 export namespace ecr {
 	/**
-	 * A special component type that refers to the registry entity pool.
+	 * Special component type that represents entities in a registry.
+	 * 
+	 * @remarks
+	 * 
+	 * Entities are represented by a special component type, `ecr.entity`.
+	 * 
+	 * This can be used in the same way as custom components types, except instead of representing components, represents entities themselves.
+	 * 
+	 * This type cannot be used to modify the registry, methods like `add()`, `set()`, `remove()` do not work with this type.
 	 * 
 	 * @example
-	 * View all entities:
+	 * You can get all entities without certain components with:
 	 * ```
-	 * registry.view(ecr.entity)
+	 * registry.view(ecr.entity).exclude(...);
 	 * ```
-	 * Listen to entity creation:
-	 * ```
-	 * registry.added(ecr.entity).connect(() => {})
-	 * ```
+	 * 
 	 */
 	export const entity: Component;
 
 	/**
-	 * A null entity.
+	 * The context entity id.
 	 * 
-	 * This id behaves like the id of an entity that has been destroyed.
+	 * @remarks
 	 * 
-	 * Attempting to add or remove components using this id will error.
+	 * All registries have a special entity, that uses a reserved id `ecr.context`, called the context entity.
+	 * 
+	 * Often you will need to store data about the world that isn't specific to an entity, data such as a round counter, in-game timer, etc.
+	 * 
+	 * The context entity can be used to store data like this; the world's context.
+	 * 
+	 * This entity does not exist by default, it is automatically created the first time `Registry.context()` is called, subsequent calls return the same entity.
+	 * 
+	 * @example
+	 * 
+	 * ```
+	 * const Round = ecr.component<number>();
+	 * 
+	 * registry.context().set(Round, 1);
+	 * 
+	 * // or, if you prefer
+	 * 
+	 * registry.set(ecr.context, Round, 1);
+	 * ```
+	 * 
+	 */
+	export const context: Entity;
+
+	/**
+	 * The null entity id.
+	 * 
+	 * Attempting to use this entity with a registry will error.
 	 * 
 	 * @example
 	 * The following expression will always return false:
 	 * ```
-	 * registry.contains(ecr.null)
+	 * registry.contains(ecr.null_id);
 	 * ```
 	 */
 	export const null_id: Entity;
+
+	/**
+	 * The size of the entity id in bytes.
+	 */
+	export const id_size: Entity;
 
 	/**
 	 * Creates a new registry.
@@ -479,12 +514,22 @@ export namespace ecr {
 	export function component<T>(): Component<T>;
 
 	/**
-	 * Creates a new valueless component type.
+	 * Creates a new tag component type.
 	 * 
 	 * @remarks
-	 * Tag components are a special type of component where no value is stored alongside.
+	 * Tag components are a special type of component that have no value
 	 * 
-	 * Use `add()` to add tags to entities. `set()` will not apply the valueless optimization. `get()` will return `undefined` so use `has()` instead.
+	 * @example 
+	 * ```
+	 * const Selected = ecr.tag()
+	 * 
+	 * registry.add(id, Selected)
+	 * registry.has(id, Selected) // true
+	 * 
+	 * registry.remove(id, Selected)
+	 * registry.has(id, Selected) // false
+	 * ```
+	 * 
 	 * @returns A unique identifier representing a new component type.
 	 */
 	export function tag(): Component<undefined>
@@ -515,7 +560,28 @@ export namespace ecr {
 	 */
 	export function queue<T extends unknown[]>(): Queue<T>;
 
-	export function extract(entity: Entity): LuaTuple<[number, number]>;
+	/** 
+	 * Converts a buffer of entities into an array of entities.
+	 * 
+	 * @remarks
+	 * Copies the first size ids from the buffer to a target array.
+	 * 
+	 * If no target array is given, one will be created.
+	*/
+	export function buffer_to_array(buf: buffer, size: number, arr?: Entity[]): Entity[];
+
+	/**
+	 * Converts an array of entities into a buffer of entities.
+	 * 
+	 * @remarks
+	 * 
+	 * Copies the first size ids from an array to a target buffer.
+	 * 
+	 * If no target buffer is given, one will be created.
+	 */
+	export function array_to_buffer(arr: Entity[], size: number, buf?: buffer): buffer;
+
+	export function inspect(entity: Entity): LuaTuple<[number, number]>;
 }
 
 export default ecr;
