@@ -1,10 +1,10 @@
 <div align="center">
-	<img src="https://github.com/ReturnedTrue/ECR-ts/blob/master/images/logo.svg" width="600" alt="ECR-ts Logo">
+	<img src="https://github.com/ReturnedTrue/ecr-ts/blob/master/images/logo.svg" width="600" alt="ecr-ts logo">
 </div>
 
 ___
 
-Fork of [ECR](https://github.com/centau/ecr) for Roblox-ts.
+Fork of [ecr](https://github.com/centau/ecr) for Roblox-ts.
 
 # Differences to Luau version
 - TS has no length operator, instead use `.size()`. Queues and Pools have it as a property, `.size`

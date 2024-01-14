@@ -5,7 +5,7 @@
   "homepage": "https://centau.github.io/ecr/",
   "repository": {
 	"type": "git",
-	"url": "https://github.com/ReturnedTrue/ECR-ts"
+	"url": "https://github.com/ReturnedTrue/ecr-ts"
   },
   "main": "src/ecr",
   "keywords": [],
