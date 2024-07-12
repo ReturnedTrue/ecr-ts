@@ -74,7 +74,7 @@ export interface Handle {
 	 * 
 	 * @returns `true` only if the entity has every component specified.
 	 */
-	has(this: Handle, ...components: ComponentArray): void;
+	has(this: Handle, ...components: ComponentArray): boolean;
 
 	/**
 	 * Gets the entity's component values.
