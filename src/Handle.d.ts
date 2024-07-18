@@ -77,6 +77,13 @@ export interface Handle {
 	has(this: Handle, ...components: ComponentArray): boolean;
 
 	/**
+	 * Gets the entity's component value.
+	 * 
+	 * @throws If the entity does not have the component.
+	 */
+	get<T>(this: Handle, components: Component<T>): T;
+
+	/**
 	 * Gets the entity's component values.
 	 * 
 	 * @throws If the entity does not have a component.
@@ -86,7 +93,7 @@ export interface Handle {
 	/**
 	 * Gets the entity's component value.
 	 * 
-	 * @returns `undefined` if the entity does not have a component.
+	 * @returns `undefined` if the entity does not have the component.
 	 */
 	try_get<T>(this: Handle, component: Component<T>): T | undefined;
 

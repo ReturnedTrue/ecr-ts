@@ -252,6 +252,15 @@ export interface Registry {
 	has(this: Registry, id: Entity, ...components: ComponentArray): boolean;
 
 	/**
+	 * Gets an entity's component value.
+	 * 
+	 * @remarks
+	 * 
+	 * Will error if the entity does not have the component.
+	 */
+	get<T>(this: Registry, id: Entity, component: Component<T>): T;
+
+	/**
 	 * Gets an entity's component values.
 	 * 
 	 * @remarks
@@ -265,7 +274,7 @@ export interface Registry {
 	 * 
 	 * @remarks
 	 * 
-	 * Will return `undefined` if the entity does not have a component.
+	 * Will return `undefined` if the entity does not have the component.
 	 */
 	try_get<T>(this: Registry, id: Entity, component: Component<T>): T | undefined;
 
