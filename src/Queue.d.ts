@@ -2,7 +2,7 @@ export type QueueableSignal<T extends unknown[]> = {
 	connect(this: QueueableSignal<T>, callback: (...args: T) => unknown): void;
 } | {
 	Connect(this: QueueableSignal<T>, callback: (...args: T) => unknown): void;
-};
+} | ((listener: (...args: T) => void) => void);
 
 /**
  * Queues values to be processed later.

@@ -58,17 +58,6 @@ export type Observer<T extends unknown[]> = IterableFunction<LuaTuple<[Entity, .
 	reconnect(this: Observer<T>): Observer<T>;
 
 	/**
-	 * Stops automatic clearing of the observer.
-	 * 
-	 * @remarks
-	 * 
-	 * Stops the observer from automatically clearing after it is iterated.
-	 * 
-	 * @returns The same observer that it was called on.
-	 */
-	persist(this: Observer<T>): Observer<T>;
-
-	/**
 	 * Clears all recorded changes.
 	 * 
 	 * Use to clear all recorded changes after they have been processed to avoid reprocessing the same changes again later.

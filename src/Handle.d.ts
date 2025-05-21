@@ -53,6 +53,11 @@ export interface Handle {
 	set<T>(this: Handle, component: Component<T>, value: T): Handle;
 
 	/**
+	 * Inserts a new element into the entity's component 
+	 */
+	insert<T>(this: Handle, component: Component<Array<T>>, value: T): Handle;
+
+	/**
 	 * Updates the entity's component.
 	 * 
 	 * @remarks
@@ -61,13 +66,19 @@ export interface Handle {
 	 * 
 	 * If there is a constructor defined for the given component and the entity does not have the component, the constructor will be called and the returned value passed into the callback.
 	 * 
+	 * **WARNING**
+	 * 
+	 * Attempting to patch a component that the entity does not have and that has no constructor, will throw an error.
+	 * 
 	 * @example
 	 * 
 	 * ```
 	 * handle.patch(Health, (health) => health - 10)
 	 * ```
+	 * 
+	 * @returns The new value returned by the patcher
 	 */
-	patch<T>(this: Handle, component: Component<T>, patcher: (current: T) => T): void;
+	patch<T>(this: Handle, component: Component<T>, patcher: (current: T) => T): T;
 
 	/**
 	 * Checks if the handle's entity has all of the given components.

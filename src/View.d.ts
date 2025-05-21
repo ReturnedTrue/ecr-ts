@@ -1,4 +1,4 @@
-import { Entity, ComponentArray, Component } from "./ecr";
+import { Entity, ComponentArray} from "./ecr";
 
 /**
  * Iterator for viewing entities and components in a registry.
@@ -40,17 +40,14 @@ export type View<T extends unknown[]> = IterableFunction<LuaTuple<[Entity, ...T]
 	 * @returns The same view that it was called on.
 	 */
 	exclude(this: View<T>, ...components: ComponentArray): View<T>;
-
+} & (T extends [infer U] ? {
 	/**
-	 * Specifies a component to iterate along.
-	 * 
-	 * @remarks
-	 * 
-	 * Views, by default, iterate along the smallest pool within the given set of components. 
-	 * 
-	 * This function allows a specific pool to be iterated along instead as long as the component is included in the view.
-	 * 
-	 * @returns The same view that it was called on.
+	 * Updates each entity in the view by changing the component value from the given in the callback, to the callback's return
 	 */
-	use(this: View<T>, lead: Component): View<T>;
-};
+	patch(this: View<T>, fn: (from: U) => U): void;
+} : {
+	/**
+	 * Updates each entity in the view by changing the components values from the given in the callback, to the callback's returns
+	 */
+	patch(this: View<T>, fn: (...from: T) => LuaTuple<T>): void;
+});

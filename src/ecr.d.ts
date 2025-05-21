@@ -126,6 +126,8 @@ interface Pool<T> {
 	on_add: Array<Listener<T>> | false;
 	on_change: Array<Listener<T>> | false;
 	on_remove: Array<Listener> | false;
+	on_clear: Array<() => void> | false;
+	after_clear: Array<() => void> | false;
 	group: GroupData<T> | false;
 
 	reserve(this: Pool<T>, size: number): void;
@@ -228,6 +230,11 @@ export interface Registry {
 	set<T>(this: Registry, id: Entity, component: Component<T>, value: T): void;
 
 	/**
+	 * Inserts a new element into an entity's array component 
+	 */
+	insert<T>(this: Registry, entity: Entity, component: Component<Array<T>>, value: T): void;
+
+	/**
 	 * Updates an entity's component.
 	 * 
 	 * @remarks
@@ -238,9 +245,17 @@ export interface Registry {
 	 * 
 	 * **WARNING**
 	 * 
-	 * Attempting to patch a component that an entity does not have and that has no constructor will throw an error.
+	 * Attempting to patch a component that the entity does not have and that has no constructor, will throw an error.
+	 * 
+	 * @example
+	 * 
+	 * ```
+	 * registry.patch(entity, Health, (health) => health - 10)
+	 * ```
+	 * 
+	 * @returns The new value returned by the patcher
 	 */
-	patch<T>(this: Registry, id: Entity, component: Component<T>, patcher: (oldValue: T) => T): void;
+	patch<T>(this: Registry, id: Entity, component: Component<T>, patcher: (oldValue: T) => T): T;
 
 	/**
 	 * Checks if an entity has all of the given components.
@@ -286,6 +301,22 @@ export interface Registry {
 	 * Will do nothing if the entity does not have a component.
 	 */
 	remove(this: Registry, id: Entity, ...components: ComponentArray): void;
+
+	/**
+	 * Returns the first entity found that has a component matching the given value.
+	 * 
+	 * @remarks
+	 * This is a linear search.
+	 */
+	find<T>(this: Registry, component: Component<T>, value: T): Entity | undefined;
+
+	/**
+	 * Copies the values of a component and pastes it into another component
+	 * 
+	 * @remarks
+	 * This removes any entities that don't have a value in the copied component from the pasted component. It does not fire signals when called.
+	 */
+	copy<T>(this: Registry, from: Component<T>, to: Component<T>): void;
 
 	/**
 	 * Creates a [view](https://centau.github.io/ecr/api/View.html) for all entities with the specified components.
@@ -359,7 +390,7 @@ export interface Registry {
 	 * 
 	 * @remarks
 	 * 
-	 * The signal is fired after the component is changed.
+	 * The signal is fired **after** the component is changed.
 	 * 
 	 * **WARNING**
 	 * 
@@ -372,7 +403,7 @@ export interface Registry {
 	 * 
 	 * @remarks
 	 * 
-	 * The signal is fired after the component is changed.
+	 * The signal is fired **before** the component is changed.
 	 * 
 	 * **WARNING**
 	 * 
@@ -385,13 +416,39 @@ export interface Registry {
 	 * 
 	 * @remarks
 	 * 
-	 * The signal is fired before the component is actually removed. You can retrieve the component value within the signal listener.
+	 * The signal is fired **before** the component is actually removed. You can retrieve the component value within the signal listener.
 	 * 
 	 * **WARNING**
 	 * 
 	 * Components cannot be added or removed within a listener.
 	 */
 	on_remove(this: Registry, component: Component): Signal<[Entity]>;
+
+	/**
+	 * Returns a [signal](https://centau.github.io/ecr/api/Signal.html) which is fired whenever the given component is cleared from a registry
+	 * 
+	 * @remarks
+	 * 
+	 * This signal is fired **before** the component is actually cleared. You can retrieve the component value within the signal listener.
+	 * 
+	 * **WARNING**
+	 * 
+	 * Components cannot be added or removed within a listener.
+	 */
+	on_clear(this: Registry, component: Component): Signal<[]>;
+
+	/**
+	 * Returns a [signal](https://centau.github.io/ecr/api/Signal.html) which is fired whenever the given component is cleared from a registry
+	 * 
+	 * @remarks
+	 * 
+	 * This signal is fired **after** the component is actually cleared.
+	 * 
+	 * **WARNING**
+	 * 
+	 * Components cannot be added or removed within a listener.
+	 */	
+	after_clear(this: Registry, component: Component): Signal<[]>;
 
 	/**
 	 * Returns a [handle](https://centau.github.io/ecr/api/Handle.html) to an entity.
@@ -497,6 +554,16 @@ export namespace ecr {
 	export function registry(): Registry;
 
 	/**
+	 * Creates a new registry.
+	 * 
+	 * @remarks
+	 * If specified, the entity id space can be restricted. 
+	 * 
+	 * This is useful for ensuring ids are not in conflict when copying entities from one registry to another.
+	 */
+	export function registry(start: number, end: number): Registry;
+
+	/**
 	 * Creates a new component type.
 	 * @param constructor Invoked when `registry.add()` or `registry.patch()` is used.
 	 * @example
@@ -589,6 +656,17 @@ export namespace ecr {
 	 * If no target buffer is given, one will be created.
 	 */
 	export function array_to_buffer(arr: Entity[], size: number, buf?: buffer): buffer;
+
+	/**
+	 * Copies a buffer of entities into a buffer of entities.
+	 * 
+	 * @remarks
+	 * 
+	 * Copies the first size ids from a buffer to a target buffer.
+	 * 
+	 * If no target buffer is given, one will be created.
+	 */
+	export function buffer_to_buffer(from: buffer, size: number, to?: buffer): buffer;
 
 	export function inspect(entity: Entity): LuaTuple<[number, number]>;
 }
